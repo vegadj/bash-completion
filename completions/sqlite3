@@ -21,17 +21,33 @@ _sqlite3()
             COMPREPLY=($(compgen -c -- "$cur"))
             return
             ;;
+        --file | --append | -!(-*)[fa])
+            _filedir sqlar
+            return
+            ;;
+        --directory | -!(-*)C)
+            _filedir -d
+            return
+            ;;
     esac
 
     [[ $cword -gt 2 && ${words[cword - 2]} == -@(lookaside|pagecache|scratch) ]] &&
         return
 
     if [[ $cur == -* ]]; then
-        COMPREPLY=($(compgen -W '$(_parse_help "$1" -help)' -- "$cur"))
+        if [[ ${words[*]} == *\ -A* ]]; then
+            COMPREPLY=($(compgen -W '$(_parse_help "$1" -A -h)' -- "$cur"))
+        else
+            COMPREPLY=($(compgen -W '$(_parse_help "$1" -help)' -- "$cur"))
+        fi
         return
     fi
 
-    _filedir "$dbexts"
+    if [[ ${words[*]} == *\ -A* ]]; then
+        _filedir sqlar
+    else
+        _filedir "$dbexts"
+    fi
 } &&
     complete -F _sqlite3 sqlite3
 
